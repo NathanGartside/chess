@@ -22,6 +22,8 @@ RUN mkdir build
 
 COPY . ./build
 
+WORKDIR /app
+
 # We copy our app folder to the /build
 
 RUN apt update && apt install -y python3-pip                                  \
