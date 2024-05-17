@@ -26,6 +26,11 @@ WORKDIR /app
 
 # We copy our app folder to the /build
 
+FROM amazonlinux
+RUN yum update -y
+
+RUN yum -y install nginx; yum clean all; systemctl enable nginx
+
 RUN apt update && apt install -y python3-pip                                  \
     && pip3 install -r /build/requirements.txt                               \
     && apt remove -y python3-pip                                              \
@@ -40,7 +45,6 @@ RUN apt update && apt install -y python3-pip                                  \
 
 # Note we use /build/requirements.txt since this is our file
 
-RUN yum -y install nginx; yum clean all; systemctl enable nginx
 
 EXPOSE 8080
 
