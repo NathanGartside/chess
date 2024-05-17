@@ -1,4 +1,5 @@
-FROM nginx/unit:1.23.0-python3.9/local/c7-systemd
+FROM nginx/unit:1.23.0-python3.9
+FROM local/c7-systemd
 
 # Our Debian with Python and Nginx for python apps.
 # See https://hub.docker.com/r/nginx/unit/
