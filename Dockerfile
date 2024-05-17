@@ -1,4 +1,4 @@
-FROM nginx/unit:1.23.0-python3.9
+FROM nginx/unit:1.23.0-python3.9/local/c7-systemd
 
 # Our Debian with Python and Nginx for python apps.
 # See https://hub.docker.com/r/nginx/unit/
@@ -40,6 +40,10 @@ RUN apt update && apt install -y python3-pip                                  \
 
 # Note we use /build/requirements.txt since this is our file
 
+RUN yum -y install nginx; yum clean all; systemctl enable nginx
+
 EXPOSE 8080
+
+CMD ["/usr/sbin/init"]
 
 # Instruction informs Docker that the container listens on port 8080
