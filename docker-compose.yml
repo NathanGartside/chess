@@ -4,4 +4,4 @@ services:
     image:chess
       container_name:web_chess_container
       ports:
-        - 8081:
+        - "8080:8080"
