@@ -4,4 +4,4 @@ services:
     image:chess
       container_name:web_chess_container
       ports:
-      - "80:8081/tcp"
+        - "80:8081/tcp"
