@@ -1,7 +1,0 @@
-version: "3.7"
-services:
-  Nginx:
-    image:chess
-      container_name:web_chess_container
-      ports:
-        - "8080:8080"
