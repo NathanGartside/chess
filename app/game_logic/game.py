@@ -15,12 +15,26 @@ class Game:
             self.start_new_game()
 
     def start_new_game(self):
-        self.player1, self.player2 = Player(is_first=True), Player(is_first=False)
+        self.player1, self.player2 = Player(is_first=True, name='Player1'), Player(is_first=False, name='Player2')
         self.player1.generate_pieces()
         self.player2.generate_pieces()
+        self.board = self.generate_board()
+        keep_playing = True
+        while keep_playing:
+            active_player = self.player1 if self.turn % 2 == 1 else self.player2
+            keep_playing = self.perform_turn(active_player)
+
+    def perform_turn(self, active_player: Player) -> bool:
+        is_valid = False
+        while not is_valid:
+            self.display_board()
+            move = input('Please enter desired move ' + active_player.get_name() + ': ')
+
+        return False
 
     def display_board(self):
-        board = self.generate_board()
+        if not self.board:
+            board = self.generate_board()
         row_num = 8
         for index, row in enumerate(reversed(board)):
             row_string = str(row_num) + '|'

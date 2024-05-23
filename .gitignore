@@ -1,3 +1,6 @@
-.idea
+.idea/
 .env
-app/__pycache__
+
+app/__pycache__/
+app/game_logic/__pycache__/
+app/game_logic/pieces/__pycache__/

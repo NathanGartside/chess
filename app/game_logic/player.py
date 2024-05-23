@@ -7,9 +7,10 @@ from .pieces.pawn import Pawn
 
 
 class Player:
-    def __init__(self, is_first):
+    def __init__(self, is_first: bool, name: str = 'Player'):
         self.is_first = is_first
         self.pieces = []
+        self.name = name
 
     def generate_pieces(self):
         # Generate pawn row
@@ -28,3 +29,6 @@ class Player:
         king_col, queen_col = 5, 4
         self.pieces.append(King({'row': back_row, 'col_num': king_col}))
         self.pieces.append(Queen({'row': back_row, 'col_num': queen_col}))
+
+    def get_name(self) -> str:
+        return self.name
