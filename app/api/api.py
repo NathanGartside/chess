@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import APIRouter
 
-app = FastAPI()
+router = APIRouter()
 
-@app.get("/get-message")
+
+@router.get("/get-message")
 async def read_root():
     return {"Message": "Congrats! This is your first api!"}
