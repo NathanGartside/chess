@@ -35,9 +35,12 @@ class Player:
             # TODO: CHECK IF MOVE IS VALID, SHOULD BE PIECE CLASS FUNCTION
             # TODO: NEED TO CHECK IF SPACE IS OCCUPIED BY ANOTHER PIECE AND
             #  CAPTURE IF ENEMY PIECE
-            if piece.position['col_num'] == coords[0]['col_num'] and piece.position['row'] == coords[0]['row']:
-                self.pieces[i].position = coords[1]
+            if piece.position['col_num'] == coords[0]['col_num'] \
+                    and piece.position['row'] == coords[0]['row']\
+                    and piece.can_move(coords[1], self.is_first):
+                self.pieces[i].set_position(coords[1])
                 return True
+        print('Invalid move input, please try again')
         return False
 
     def get_name(self) -> str:
