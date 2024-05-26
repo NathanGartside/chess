@@ -30,5 +30,12 @@ class Player:
         self.pieces.append(King({'row': back_row, 'col_num': king_col}))
         self.pieces.append(Queen({'row': back_row, 'col_num': queen_col}))
 
+    def move(self, coords: list) -> bool:
+        for i, piece in enumerate(self.pieces):
+            if piece.position['col_num'] == coords[0]['col_num'] and piece.position['row'] == coords[0]['row']:
+                self.pieces[i].position = coords[1]
+                return True
+        return False
+
     def get_name(self) -> str:
         return self.name

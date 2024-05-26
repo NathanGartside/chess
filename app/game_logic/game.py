@@ -22,21 +22,25 @@ class Game:
         keep_playing = True
         while keep_playing:
             active_player = self.player1 if self.turn % 2 == 1 else self.player2
-            keep_playing = self.perform_turn(active_player)
+            keep_playing = self.perform_turn(self.player1 if self.turn % 2 == 1 else self.player2)
+        #self.display_board()
 
     def perform_turn(self, active_player: Player) -> bool:
+        active_player = self.player1 if self.turn % 2 == 1 else self.player2
         is_valid = False
         while not is_valid:
             self.display_board()
-            move = input('Please enter desired move ' + active_player.get_name() + ': ')
-
+            move = input('Please enter desired move ' + active_player.get_name() + ' (i.e. A2:A4): ')
+            split_moves = move.split(':')
+            for index, coord in enumerate(split_moves):
+                split_moves[index] = self.get_input_coords(coord)
+            active_player.move(split_moves)
         return False
 
     def display_board(self):
-        if not self.board:
-            board = self.generate_board()
+        self.board = self.generate_board()
         row_num = 8
-        for index, row in enumerate(reversed(board)):
+        for index, row in enumerate(reversed(self.board)):
             row_string = str(row_num) + '|'
             row_num -= 1
             for value in row:
@@ -58,3 +62,12 @@ class Game:
         for i in range(8):
             row_string += str.center(chr(i+97), MAX_PIECE_NAME_LENGTH+3)
         return row_string
+
+    def get_input_coords(self, user_input: str) -> dict:
+        row = int(user_input[1])
+        col = self.convert_char_to_number(user_input[0])
+        return {'row': row, 'col_num': col}
+
+    @staticmethod
+    def convert_char_to_number(char: str) -> int:
+        return ord(char.upper()) - 64

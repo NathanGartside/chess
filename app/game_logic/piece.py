@@ -1,5 +1,5 @@
 class Piece:
-    def __init__(self, position: list):
+    def __init__(self, position: dict):
         self.name = None
         self.position = position
 
