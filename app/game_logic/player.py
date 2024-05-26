@@ -14,7 +14,7 @@ class Player:
 
     def generate_pieces(self):
         # Generate pawn row
-        for i in range(8):
+        for i in range(1, 9):
             pawn_row = 2 if self.is_first else 7
             self.pieces.append(Pawn({'row': pawn_row, 'col_num': i}))
         # Generate back row
@@ -32,6 +32,9 @@ class Player:
 
     def move(self, coords: list) -> bool:
         for i, piece in enumerate(self.pieces):
+            # TODO: CHECK IF MOVE IS VALID, SHOULD BE PIECE CLASS FUNCTION
+            # TODO: NEED TO CHECK IF SPACE IS OCCUPIED BY ANOTHER PIECE AND
+            #  CAPTURE IF ENEMY PIECE
             if piece.position['col_num'] == coords[0]['col_num'] and piece.position['row'] == coords[0]['row']:
                 self.pieces[i].position = coords[1]
                 return True
