@@ -30,18 +30,34 @@ class Player:
         self.pieces.append(King({'row': back_row, 'col_num': king_col}))
         self.pieces.append(Queen({'row': back_row, 'col_num': queen_col}))
 
-    def move(self, coords: list) -> bool:
-        for i, piece in enumerate(self.pieces):
-            # TODO: CHECK IF MOVE IS VALID, SHOULD BE PIECE CLASS FUNCTION
-            # TODO: NEED TO CHECK IF SPACE IS OCCUPIED BY ANOTHER PIECE AND
-            #  CAPTURE IF ENEMY PIECE
-            if piece.position['col_num'] == coords[0]['col_num'] \
-                    and piece.position['row'] == coords[0]['row']\
-                    and piece.can_move(coords[1], self.is_first):
-                self.pieces[i].set_position(coords[1])
-                return True
-        print('Invalid move input, please try again')
-        return False
+    def move(self, coords: list, other_player: "Player") -> bool:
+        # TODO: NEED TO CHECK IF SPACE IS OCCUPIED BY ANOTHER PIECE AND
+        #  CAPTURE IF ENEMY PIECE
+        index = self.check_space_occupancy(coords[0], self.pieces)
+        if index == -1:
+            print('Invalid move input: Designated space not occupied by player\'s piece.')
+            return False
+
+        piece = self.pieces[index]
+        if not piece.can_move(coords[1], self.is_first):
+            print('Invalid move input: Piece cannot move to requested position.')
+            return False
+
+        # If the same team piece is occupying the new space, then invalid move
+        if self.check_space_occupancy(coords[1], self.pieces) != -1:
+            print('Invalid move input: New space is already occupied.')
+            return False
+
+        self.pieces[index].set_position(coords[1])
+        return True
+
+    @staticmethod
+    def check_space_occupancy(space: dict, pieces: list) -> int:
+        for i, piece in enumerate(pieces):
+            if piece.position['col_num'] == space['col_num'] \
+                    and piece.position['row'] == space['row']:
+                return i
+        return -1
 
     def get_name(self) -> str:
         return self.name

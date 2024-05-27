@@ -22,10 +22,11 @@ class Game:
         keep_playing = True
         while keep_playing:
             active_player = self.player1 if self.turn % 2 == 1 else self.player2
-            keep_playing = self.perform_turn(active_player)
+            other_player = self.player2 if self.turn % 2 == 1 else self.player1
+            keep_playing = self.perform_turn(active_player, other_player)
             self.turn += 1
 
-    def perform_turn(self, active_player: Player) -> bool:
+    def perform_turn(self, active_player: Player, other_player: Player) -> bool:
         is_valid = False
         while not is_valid:
             self.display_board()
@@ -33,7 +34,7 @@ class Game:
             split_moves = move.split(':')
             for index, coord in enumerate(split_moves):
                 split_moves[index] = self.get_input_coords(coord)
-            is_valid = active_player.move(split_moves)
+            is_valid = active_player.move(split_moves, other_player)
         self.display_board()
         return input('Do you want to keep playing (Y/N)? ').upper() == 'Y'
 
