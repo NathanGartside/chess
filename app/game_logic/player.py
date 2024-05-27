@@ -31,13 +31,12 @@ class Player:
         self.pieces.append(Queen({'row': back_row, 'col_num': queen_col}))
 
     def move(self, coords: list, other_player: "Player") -> bool:
-        # TODO: NEED TO CHECK IF SPACE IS OCCUPIED BY ANOTHER PIECE AND
-        #  CAPTURE IF ENEMY PIECE
         index = self.check_space_occupancy(coords[0], self.pieces)
         if index == -1:
             print('Invalid move input: Designated space not occupied by player\'s piece.')
             return False
 
+        # TODO: CHECK IF SPACE BETWEEN COORDINATES ARE OCCUPIED!
         piece = self.pieces[index]
         if not piece.can_move(coords[1], self.is_first):
             print('Invalid move input: Piece cannot move to requested position.')
@@ -48,8 +47,15 @@ class Player:
             print('Invalid move input: New space is already occupied.')
             return False
 
+        enemy_piece_index = self.check_space_occupancy(coords[1], other_player.pieces)
+        if enemy_piece_index != -1:
+            other_player.remove_piece(enemy_piece_index)
+
         self.pieces[index].set_position(coords[1])
         return True
+
+    def remove_piece(self, piece_index: int) -> None:
+        del self.pieces[piece_index]
 
     @staticmethod
     def check_space_occupancy(space: dict, pieces: list) -> int:
