@@ -4,6 +4,7 @@ class Piece:
         self.position = position
 
     def can_move(self, new_pos: dict, is_first: bool) -> bool:
+        # TODO: Check if space is occupied by same player piece!
         if new_pos['row'] < 1 or new_pos['row'] > 8\
                 or new_pos['col_num'] < 1 or new_pos['col_num'] > 8:
             return False

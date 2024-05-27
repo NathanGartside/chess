@@ -17,7 +17,8 @@ class Pawn(Piece):
 
         # Pawns have a speed limit
         row_diff = abs(new_pos['row'] - self.position['row'])
-        if row_diff > 2 or (row_diff == 2 and not self.first_move):
+        col_diff = abs(new_pos['col_num'] - self.position['col_num'])
+        if row_diff > 2 or (row_diff == 2 and not self.first_move) or col_diff > 1:
             return False
 
         # first_move is set to false due to passing all move checks
