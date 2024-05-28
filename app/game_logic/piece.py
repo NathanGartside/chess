@@ -3,7 +3,7 @@ class Piece:
         self.name = None
         self.position = position
 
-    def can_move(self, new_pos: dict, is_first: bool) -> bool:
+    def can_move(self, new_pos: dict, **kwargs) -> bool:
         if new_pos['row'] < 1 or new_pos['row'] > 8\
                 or new_pos['col_num'] < 1 or new_pos['col_num'] > 8:
             return False
