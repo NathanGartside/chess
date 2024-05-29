@@ -7,12 +7,12 @@ class Pawn(Piece):
         self.set_name('P')
         self.first_move = True
 
-    def can_move(self, new_pos: dict, is_first: bool):
-        if not super().can_move(new_pos, is_first):
+    def can_move(self, new_pos: dict, **kwargs):
+        if not super().can_move(new_pos, **kwargs):
             return False
         # Pawns can only move forward, not backwards or in the same row
-        if (new_pos['row'] >= self.position['row'] and not is_first)\
-                or (new_pos['row'] <= self.position['row'] and is_first):
+        if (new_pos['row'] >= self.position['row'] and not kwargs['is_first'])\
+                or (new_pos['row'] <= self.position['row'] and kwargs['is_first']):
             return False
 
         # Pawns have a speed limit
@@ -21,6 +21,8 @@ class Pawn(Piece):
         if row_diff > 2 or (row_diff == 2 and not self.first_move) or col_diff > 1:
             return False
 
+        if col_diff == 1 and not kwargs['is_capture']:
+            return False
         # first_move is set to false due to passing all move checks
         if self.first_move:
             self.first_move = False
