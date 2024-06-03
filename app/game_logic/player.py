@@ -11,6 +11,7 @@ class Player:
         self.is_first = is_first
         self.pieces = []
         self.name = name
+        self.in_check = False
 
     def generate_pieces(self):
         # Generate pawn row
@@ -31,32 +32,51 @@ class Player:
         self.pieces.append(Queen({'row': back_row, 'col_num': queen_col}))
 
     def move(self, coords: list, other_player: "Player") -> bool:
-        index = self.check_space_occupancy(coords[0], self.pieces)
-        if index == -1:
+        result = self.can_move(coords, other_player)
+        if result.get('status_code') == -1:
             print('Invalid move input: Designated space not occupied by player\'s piece.')
             return False
 
-        piece = self.pieces[index]
-        # enemy piece index is calculated here due to pawns allowing movement if it is capturing
-        enemy_piece_index = self.check_space_occupancy(coords[1], other_player.pieces)
-        if not piece.can_move(coords[1], is_first=self.is_first, is_capture=enemy_piece_index != -1):
+        if result.get('status_code') == -2:
             print('Invalid move input: Piece cannot move to requested position.')
             return False
 
         # If the same team piece is occupying the new space, then invalid move
-        if self.check_space_occupancy(coords[1], self.pieces) != -1:
+        if result.get('status_code') == -3:
             print('Invalid move input: New space is already occupied.')
             return False
 
-        if self.check_middle_space_occupancy(coords[0], coords[1], self.pieces, other_player.pieces):
+        if result.get('status_code') == -4:
             print('Invalid move input: Designated piece cannot jump over other pieces')
             return False
 
-        if enemy_piece_index != -1:
-            other_player.remove_piece(enemy_piece_index)
+        data = result.get('data')
 
-        self.pieces[index].set_position(coords[1])
+        if data.get('enemy_piece_index') != -1:
+            other_player.remove_piece(data.get('enemy_piece_index'))
+
+        self.pieces[data.get('piece_index')].set_position(coords[1])
         return True
+
+    def can_move(self, coords: list, other_player: "Player") -> dict:
+        piece_index = self.check_space_occupancy(coords[0], self.pieces)
+        if piece_index == -1:
+            return {'status_code': -1, 'data': None}
+
+        piece = self.pieces[piece_index]
+        # enemy piece index is calculated here due to pawns allowing movement if it is capturing
+        enemy_piece_index = self.check_space_occupancy(coords[1], other_player.pieces)
+        if not piece.can_move(coords[1], is_first=self.is_first, is_capture=enemy_piece_index != -1):
+            return {'status_code': -2, 'data': None}
+
+        # If the same team piece is occupying the new space, then invalid move
+        if self.check_space_occupancy(coords[1], self.pieces) != -1:
+            return {'status_code': -3, 'data': None}
+
+        if self.check_middle_space_occupancy(coords[0], coords[1], self.pieces, other_player.pieces):
+            return {'status_code': -4, 'data': None}
+
+        return {'status_code': 1, 'data': {'piece_index': piece_index, 'enemy_piece_index': enemy_piece_index}}
 
     def check_middle_space_occupancy(self, old_pos: dict, new_pos: dict,
                                      player1_pieces: list, player2_pieces: list) -> bool:
@@ -66,7 +86,6 @@ class Player:
         if (abs(row_diff) < 2 and abs(col_diff) < 2) \
                 or (abs(row_diff) == 1 and abs(col_diff) == 2) \
                 or (abs(row_diff) == 2 and abs(col_diff) == 1):
-            print('Distance is one space or a knight')
             return False
 
         # Middle spaces occupancy check
@@ -83,8 +102,27 @@ class Player:
         print('No middle piece found')
         return False
 
+    def check_if_in_check(self, enemy_player: "Player") -> bool:
+        # TODO: Check if checkmate in another function!
+        coords = [None, self.get_king().position]
+        for piece in enemy_player.pieces:
+            coords[0] = piece.position
+            if enemy_player.can_move(coords, self):
+                self.in_check = True
+                return True
+        self.in_check = False
+        return False
+
+    def get_king(self) -> King:
+        for piece in self.pieces:
+            if isinstance(piece, King):
+                return piece
+
     def remove_piece(self, piece_index: int) -> None:
         del self.pieces[piece_index]
+
+    def get_name(self) -> str:
+        return self.name
 
     @staticmethod
     def check_space_occupancy(space: dict, pieces: list) -> int:
@@ -93,6 +131,3 @@ class Player:
                     and piece.position['row'] == space['row']:
                 return i
         return -1
-
-    def get_name(self) -> str:
-        return self.name
