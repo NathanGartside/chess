@@ -90,27 +90,50 @@ class Player:
 
         # Middle spaces occupancy check
         pos = old_pos
+        pos['row'] += row_diff / abs(row_diff) if row_diff != 0 else 0
+        pos['col_num'] += col_diff / abs(col_diff) if col_diff != 0 else 0
         while pos['row'] != new_pos['row'] or pos['col_num'] != new_pos['col_num']:
-            pos['row'] += row_diff / abs(row_diff) if row_diff != 0 else 0
-            pos['col_num'] += col_diff / abs(col_diff) if col_diff != 0 else 0
-            print('checking pos')
-            print(pos)
             if self.check_space_occupancy(pos, player1_pieces) != -1 \
                     or self.check_space_occupancy(pos, player2_pieces) != -1:
-                print('Found piece occupying middle space')
                 return True
-        print('No middle piece found')
+            pos['row'] += row_diff / abs(row_diff) if row_diff != 0 else 0
+            pos['col_num'] += col_diff / abs(col_diff) if col_diff != 0 else 0
         return False
 
     def check_if_in_check(self, enemy_player: "Player") -> bool:
-        # TODO: Check if checkmate in another function!
-        coords = [None, self.get_king().position]
+        self.in_check = self.position_results_in_check(enemy_player, self.get_king().position)
+        return self.in_check
+
+    def check_for_check_mate(self, enemy_player: "Player") -> bool:
+        king = self.get_king()
+        possible_king_moves = []
+        for row in range(-1, 2):
+            for col in range(-1, 2):
+                position = {'row': king.position['row'] + row, 'col_num': king.position['col_num'] + col}
+                if self.can_move([king.position, position], enemy_player)['status_code'] == 1:
+                    possible_king_moves.append(position)
+        index = 0
+        # Check if the move results in the king being in check
+        while index != len(possible_king_moves):
+            if self.position_results_in_check(enemy_player, possible_king_moves[index]):
+                del possible_king_moves[index]
+            else:
+                index += 1
+        if possible_king_moves or not self.in_check:
+            # TODO: if possible moves is empty and not in check, then check for stalemate
+            return False
+        # TODO: Check if any of the other player pieces can stop the check
+        #   - Do this by identifying space that would save the king
+        #   - This is impossible if the enemy piece checking the king is a knight
+        #       OR there are two pieces putting the king in check
+        return True
+
+    def position_results_in_check(self, enemy_player: "Player", coord: dict) -> bool:
+        coords = [None, coord]
         for piece in enemy_player.pieces:
-            coords[0] = piece.position
-            if enemy_player.can_move(coords, self):
-                self.in_check = True
+            coords[0] = {'row': piece.position['row'], 'col_num': piece.position['col_num']}
+            if enemy_player.can_move(coords, self)['status_code'] == 1:
                 return True
-        self.in_check = False
         return False
 
     def get_king(self) -> King:

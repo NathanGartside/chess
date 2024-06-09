@@ -36,7 +36,10 @@ class Game:
                 split_moves[index] = self.get_input_coords(coord)
             is_valid = active_player.move(split_moves, other_player)
         if other_player.check_if_in_check(active_player):
-            print(f'WARNING! {other_player.get_name()} is in check!!!!')
+            if other_player.check_for_check_mate(active_player):
+                print(f'CHECKMATE! {other_player.get_name()} is checkmated!')
+            else:
+                print(f'WARNING! {other_player.get_name()} is in check!!!!')
         self.display_board()
         return input('Do you want to keep playing (Y/N)? ').upper() == 'Y'
 
