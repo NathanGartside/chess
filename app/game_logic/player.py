@@ -119,9 +119,12 @@ class Player:
                 del possible_king_moves[index]
             else:
                 index += 1
+        # TODO: Test if other pieces can stop check!
+        #   1: if a piece can capture the threatening enemy piece
+        #   2: if a piece can block the path to the king (not possible if threatening enemy piece is pawn or knight)
         if possible_king_moves or not self.in_check:
-            # TODO: if possible moves is empty and not in check, then check for stalemate
             return False
+        # TODO: if possible moves is empty and not in check, then check for stalemate
         # TODO: Check if any of the other player pieces can stop the check
         #   - Do this by identifying space that would save the king
         #   - This is impossible if the enemy piece checking the king is a knight
