@@ -119,12 +119,44 @@ class Player:
                 del possible_king_moves[index]
             else:
                 index += 1
+        # the king is not in check or can move out of check
+        if possible_king_moves or not self.in_check:
+            # TODO: if possible moves is empty and not in check, then check for stalemate
+            return False
+
+        enemies_checking = []
+        for piece in enemy_player.pieces:
+            if enemy_player.can_move([piece.position, king.position], self):
+                enemies_checking.append(piece)
+
+        # If king cannot get himself out of check and two pieces are checking him, no need to continue
+        if len(enemies_checking) > 1:
+            return True
+
+        checking_piece = enemies_checking[0]
+        # list of positions that would get the king out of check assuming a piece can move there
+        saving_positions = [checking_piece.position]
+        row_velocity = king.position['row'] - checking_piece['row']
+        col_velocity = king.position['col_num'] - checking_piece['col_num']
+
+        # checking piece is a pawn or knight or checking piece is next to the king
+        if checking_piece.get_name() not in ['P', 'Kn'] and (abs(row_velocity) > 1 or abs(col_velocity) > 1):
+            # you have the velocity, iterate through until position equals kings position, appending to saving positions
+            current_pos = checking_piece.position
+            current_pos = {
+                'row': checking_piece.position['row'] + (row_velocity / abs(row_velocity) if row_velocity != 0 else 0),
+                'col_num': checking_piece.position['col_num'] +
+                            (col_velocity / abs(col_velocity) if col_velocity != 0 else 0)
+            }
+            while current_pos != king.position:
+                saving_positions.append(current_pos)
+                current_pos['row'] += row_velocity / abs(row_velocity) if row_velocity != 0 else 0
+                current_pos['col_num'] += col_velocity / abs(col_velocity) if col_velocity != 0 else 0
+
         # TODO: Test if other pieces can stop check!
         #   1: if a piece can capture the threatening enemy piece
-        #   2: if a piece can block the path to the king (not possible if threatening enemy piece is pawn or knight)
-        if possible_king_moves or not self.in_check:
-            return False
-        # TODO: if possible moves is empty and not in check, then check for stalemate
+        #   2: if a piece can block the path to the king
+
         # TODO: Check if any of the other player pieces can stop the check
         #   - Do this by identifying space that would save the king
         #   - This is impossible if the enemy piece checking the king is a knight
