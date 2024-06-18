@@ -15,9 +15,9 @@ class Player:
 
     def generate_pieces(self):
         # Generate pawn row
-        for i in range(1, 9):
-            pawn_row = 2 if self.is_first else 7
-            self.pieces.append(Pawn({'row': pawn_row, 'col_num': i}))
+        #for i in range(1, 9):
+        #    pawn_row = 2 if self.is_first else 7
+        #    self.pieces.append(Pawn({'row': pawn_row, 'col_num': i}))
         # Generate back row
         back_row = 1 if self.is_first else 8
         counter = 0
@@ -89,15 +89,17 @@ class Player:
             return False
 
         # Middle spaces occupancy check
-        pos = old_pos
+        pos = old_pos.copy()
         pos['row'] += row_diff / abs(row_diff) if row_diff != 0 else 0
         pos['col_num'] += col_diff / abs(col_diff) if col_diff != 0 else 0
         while pos['row'] != new_pos['row'] or pos['col_num'] != new_pos['col_num']:
+            print(f'### CHECKING POS {pos} ###')
             if self.check_space_occupancy(pos, player1_pieces) != -1 \
                     or self.check_space_occupancy(pos, player2_pieces) != -1:
+                print('FOUND MIDDLE PIECE')
                 return True
-            pos['row'] += row_diff / abs(row_diff) if row_diff != 0 else 0
-            pos['col_num'] += col_diff / abs(col_diff) if col_diff != 0 else 0
+            pos['row'] += int(row_diff / abs(row_diff)) if row_diff != 0 else 0
+            pos['col_num'] += int(col_diff / abs(col_diff)) if col_diff != 0 else 0
         return False
 
     def check_if_in_check(self, enemy_player: "Player") -> bool:
@@ -126,7 +128,8 @@ class Player:
 
         enemies_checking = []
         for piece in enemy_player.pieces:
-            if enemy_player.can_move([piece.position, king.position], self):
+            print(enemy_player.can_move([piece.position, king.position], self))
+            if enemy_player.can_move([piece.position, king.position], self)['status_code'] == 1:
                 enemies_checking.append(piece)
 
         # If king cannot get himself out of check and two pieces are checking him, no need to continue
@@ -136,26 +139,38 @@ class Player:
         checking_piece = enemies_checking[0]
         # list of positions that would get the king out of check assuming a piece can move there
         saving_positions = [checking_piece.position]
-        row_velocity = king.position['row'] - checking_piece['row']
-        col_velocity = king.position['col_num'] - checking_piece['col_num']
+        row_velocity = king.position['row'] - checking_piece.position['row']
+        col_velocity = king.position['col_num'] - checking_piece.position['col_num']
 
-        # checking piece is a pawn or knight or checking piece is next to the king
+        # checking piece is not a pawn or knight and checking piece is not next to the king
         if checking_piece.get_name() not in ['P', 'Kn'] and (abs(row_velocity) > 1 or abs(col_velocity) > 1):
-            # you have the velocity, iterate through until position equals kings position, appending to saving positions
-            current_pos = checking_piece.position
-            current_pos = {
-                'row': checking_piece.position['row'] + (row_velocity / abs(row_velocity) if row_velocity != 0 else 0),
-                'col_num': checking_piece.position['col_num'] +
-                            (col_velocity / abs(col_velocity) if col_velocity != 0 else 0)
-            }
+            # Iterate through the spaces between the king and piece, these spaces determine if we can stop checkmate
+            current_pos = checking_piece.position.copy()
+            current_pos['row'] += row_velocity / abs(row_velocity) if row_velocity != 0 else 0
+            current_pos['col_num'] += col_velocity / abs(col_velocity) if col_velocity != 0 else 0
+
+            # current_pos = {
+            #    'row': checking_piece.position['row'] + (row_velocity / abs(row_velocity) if row_velocity != 0 else 0),
+            #    'col_num': checking_piece.position['col_num'] + (
+            #        col_velocity / abs(col_velocity) if col_velocity != 0 else 0)
+            # }
             while current_pos != king.position:
-                saving_positions.append(current_pos)
+                print(f'\nAPPENDING {current_pos}')
+                saving_positions.append(current_pos.copy())
                 current_pos['row'] += row_velocity / abs(row_velocity) if row_velocity != 0 else 0
                 current_pos['col_num'] += col_velocity / abs(col_velocity) if col_velocity != 0 else 0
 
         # TODO: Test if other pieces can stop check!
         #   1: if a piece can capture the threatening enemy piece
         #   2: if a piece can block the path to the king
+        print(f'\n####### SAVING POSITIONS! {saving_positions}#######')
+        for piece in self.pieces:
+            if piece.get_name() == 'K':
+                continue
+            for saving_pos in saving_positions:
+                print(f'\n###### CHECKING PIECE: {piece.get_name()} in position {piece.position} #######')
+                if self.can_move([piece.position, saving_pos], enemy_player)['status_code'] == 1:
+                    return False
 
         # TODO: Check if any of the other player pieces can stop the check
         #   - Do this by identifying space that would save the king
@@ -164,7 +179,7 @@ class Player:
         return True
 
     def position_results_in_check(self, enemy_player: "Player", coord: dict) -> bool:
-        coords = [None, coord]
+        coords = [None, coord.copy()]
         for piece in enemy_player.pieces:
             coords[0] = {'row': piece.position['row'], 'col_num': piece.position['col_num']}
             if enemy_player.can_move(coords, self)['status_code'] == 1:
