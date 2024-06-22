@@ -147,17 +147,12 @@ class Player:
             current_pos['row'] += row_velocity / abs(row_velocity) if row_velocity != 0 else 0
             current_pos['col_num'] += col_velocity / abs(col_velocity) if col_velocity != 0 else 0
 
-            # current_pos = {
-            #    'row': checking_piece.position['row'] + (row_velocity / abs(row_velocity) if row_velocity != 0 else 0),
-            #    'col_num': checking_piece.position['col_num'] + (
-            #        col_velocity / abs(col_velocity) if col_velocity != 0 else 0)
-            # }
             while current_pos != king.position:
                 saving_positions.append(current_pos.copy())
                 current_pos['row'] += row_velocity / abs(row_velocity) if row_velocity != 0 else 0
                 current_pos['col_num'] += col_velocity / abs(col_velocity) if col_velocity != 0 else 0
 
-        # Check if any other piece can block check
+        # Check if any other piece can block check based on determined saving positions
         for piece in self.pieces:
             if piece.get_name() == 'K':
                 continue
@@ -170,7 +165,7 @@ class Player:
     def position_results_in_check(self, enemy_player: "Player", coord: dict) -> bool:
         coords = [None, coord.copy()]
         for piece in enemy_player.pieces:
-            coords[0] = {'row': piece.position['row'], 'col_num': piece.position['col_num']}
+            coords[0] = piece.position.copy()
             if enemy_player.can_move(coords, self)['status_code'] == 1:
                 return True
         return False
