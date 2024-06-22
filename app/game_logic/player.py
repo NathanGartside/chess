@@ -94,10 +94,8 @@ class Player:
         pos['row'] += row_diff / abs(row_diff) if row_diff != 0 else 0
         pos['col_num'] += col_diff / abs(col_diff) if col_diff != 0 else 0
         while pos['row'] != new_pos['row'] or pos['col_num'] != new_pos['col_num']:
-            print(f'### CHECKING POS {pos} ###')
             if self.check_space_occupancy(pos, player1_pieces) != -1 \
                     or self.check_space_occupancy(pos, player2_pieces) != -1:
-                print('FOUND MIDDLE PIECE')
                 return True
             pos['row'] += int(row_diff / abs(row_diff)) if row_diff != 0 else 0
             pos['col_num'] += int(col_diff / abs(col_diff)) if col_diff != 0 else 0
@@ -129,7 +127,6 @@ class Player:
 
         enemies_checking = []
         for piece in enemy_player.pieces:
-            print(enemy_player.can_move([piece.position, king.position], self))
             if enemy_player.can_move([piece.position, king.position], self)['status_code'] == 1:
                 enemies_checking.append(piece)
 
@@ -156,28 +153,18 @@ class Player:
             #        col_velocity / abs(col_velocity) if col_velocity != 0 else 0)
             # }
             while current_pos != king.position:
-                print(f'\nAPPENDING {current_pos}')
                 saving_positions.append(current_pos.copy())
                 current_pos['row'] += row_velocity / abs(row_velocity) if row_velocity != 0 else 0
                 current_pos['col_num'] += col_velocity / abs(col_velocity) if col_velocity != 0 else 0
 
-        # TODO: Test if other pieces can stop check!
-        #   1: if a piece can capture the threatening enemy piece
-        #   2: if a piece can block the path to the king
-        print(f'\n####### SAVING POSITIONS! {saving_positions}#######')
+        # Check if any other piece can block check
         for piece in self.pieces:
             if piece.get_name() == 'K':
                 continue
             for saving_pos in saving_positions:
-                print(f'\n###### CHECKING PIECE: {piece.get_name()} in position {piece.position} #######')
                 if self.can_move([piece.position, saving_pos], enemy_player)['status_code'] == 1:
-                    print(f'#### FOUND FOR PIECE {piece.get_name()} at position {piece.position} ####')
                     return False
 
-        # TODO: Check if any of the other player pieces can stop the check
-        #   - Do this by identifying space that would save the king
-        #   - This is impossible if the enemy piece checking the king is a knight
-        #       OR there are two pieces putting the king in check
         return True
 
     def position_results_in_check(self, enemy_player: "Player", coord: dict) -> bool:
