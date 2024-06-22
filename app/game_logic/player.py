@@ -15,9 +15,9 @@ class Player:
 
     def generate_pieces(self):
         # Generate pawn row
-        #for i in range(1, 9):
-        #    pawn_row = 2 if self.is_first else 7
-        #    self.pieces.append(Pawn({'row': pawn_row, 'col_num': i}))
+        for i in range(1, 9):
+            pawn_row = 2 if self.is_first else 7
+            self.pieces.append(Pawn({'row': pawn_row, 'col_num': i}))
         # Generate back row
         back_row = 1 if self.is_first else 8
         counter = 0
@@ -60,6 +60,7 @@ class Player:
 
     def can_move(self, coords: list, other_player: "Player") -> dict:
         piece_index = self.check_space_occupancy(coords[0], self.pieces)
+        # Check if position is occupied by a player piece
         if piece_index == -1:
             return {'status_code': -1, 'data': None}
 
@@ -170,6 +171,7 @@ class Player:
             for saving_pos in saving_positions:
                 print(f'\n###### CHECKING PIECE: {piece.get_name()} in position {piece.position} #######')
                 if self.can_move([piece.position, saving_pos], enemy_player)['status_code'] == 1:
+                    print(f'#### FOUND FOR PIECE {piece.get_name()} at position {piece.position} ####')
                     return False
 
         # TODO: Check if any of the other player pieces can stop the check
