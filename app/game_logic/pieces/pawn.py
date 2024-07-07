@@ -21,8 +21,14 @@ class Pawn(Piece):
         if row_diff > 2 or (row_diff == 2 and not self.first_move) or col_diff > 1:
             return False
 
+        # Cannot move diagonally UNLESS it is a capture
         if col_diff == 1 and not kwargs['is_capture']:
             return False
+
+        # A pawn cannot capture by moving forward
+        if col_diff == 0 and row_diff > 0 and kwargs['is_capture']:
+            return False
+
         # first_move is set to false due to passing all move checks
         if self.first_move:
             self.first_move = False
