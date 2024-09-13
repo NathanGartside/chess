@@ -54,6 +54,8 @@ class Player:
 
         if data.get('enemy_piece_index') != -1:
             other_player.remove_piece(data.get('enemy_piece_index'))
+        # TODO: Check if player's own king gets put into check due to move
+        # TODO: IF already in check, make sure move puts player out of check!
 
         self.pieces[data.get('piece_index')].set_position(coords[1])
         return True
@@ -122,7 +124,6 @@ class Player:
                 index += 1
         # the king is not in check or can move out of check
         if possible_king_moves or not self.in_check:
-            # TODO: if possible moves is empty and not in check, then check for stalemate
             return False
 
         enemies_checking = []
@@ -160,6 +161,19 @@ class Player:
                 if self.can_move([piece.position, saving_pos], enemy_player)['status_code'] == 1:
                     return False
 
+        return True
+
+    def check_if_in_stalemate(self, enemy_player: "Player") -> bool:
+        # Checks every location on the board against every piece for a legal move
+        # Feel free to tell me if there is a more efficient solution than this
+        for piece in self.pieces:
+            for row_pos in range(8):
+                for col_pos in range(8):
+                    if self.can_move(
+                            coords=[piece.position, {'row': row_pos, 'col_num': col_pos}],
+                            other_player=enemy_player
+                    )['status_code'] == 1:
+                        return False
         return True
 
     def position_results_in_check(self, enemy_player: "Player", coord: dict) -> bool:
