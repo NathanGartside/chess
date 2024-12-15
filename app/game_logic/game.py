@@ -1,4 +1,5 @@
 from .player import Player
+import re
 MAX_PIECE_NAME_LENGTH = 5
 
 
@@ -32,6 +33,9 @@ class Game:
             self.display_board()
             move = input('Please enter desired move ' + active_player.get_name() + ' (i.e. A2:A4): ')
             split_moves = move.split(':')
+            if not self.validate_coordinates(split_moves):
+                print("Invalid coordinates put in, please try again.")
+                continue
             for index, coord in enumerate(split_moves):
                 split_moves[index] = self.get_input_coords(coord)
             is_valid = active_player.move(split_moves, other_player)
@@ -80,3 +84,12 @@ class Game:
     @staticmethod
     def convert_char_to_number(char: str) -> int:
         return ord(char.upper()) - 64
+
+    @staticmethod
+    def validate_coordinates(coordinates: list) -> bool:
+        pattern = re.compile("[A-Za-z][0-9]")
+        for coord in coordinates:
+            if not pattern.match(coord):
+                return False
+        return True
+
