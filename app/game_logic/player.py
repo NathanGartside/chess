@@ -14,13 +14,14 @@ class Player:
         self.in_check = False
 
     def generate_pieces(self):
+        back_row = 1 if self.is_first else 8
         # Generate pawn row
         for i in range(1, 9):
             pawn_row = 2 if self.is_first else 7
             self.pieces.append(Pawn({'row': pawn_row, 'col_num': i}))
-        # Generate back row
-        back_row = 1 if self.is_first else 8
         counter = 0
+
+        # Generate back row
         for piece_object in [Rook, Knight, Bishop]:
             for i in range(2):
                 col_num = i + counter if i == 1 else 8 - counter
@@ -52,12 +53,20 @@ class Player:
 
         data = result.get('data')
 
+        temp_player_piece_pos = self.pieces[data.get('piece_index')].position
+        temp_enemy_piece = None
         if data.get('enemy_piece_index') != -1:
+            temp_enemy_piece = data.get('enemy_piece_index')
             other_player.remove_piece(data.get('enemy_piece_index'))
-        # TODO: Check if player's own king gets put into check due to move
-        # TODO: IF already in check, make sure move puts player out of check!
 
         self.pieces[data.get('piece_index')].set_position(coords[1])
+        # If new position puts yourself in check, reset to prior the move
+        if self.check_if_in_check(other_player):
+            print('Invalid move input: Move leaves your King in check')
+            self.pieces[data.get('piece_index')].set_position(temp_player_piece_pos)
+            if data.get('enemy_piece_index') != -1 and temp_enemy_piece:
+                self.pieces.append(temp_enemy_piece)
+            return False
         return True
 
     def can_move(self, coords: list, other_player: "Player") -> dict:
