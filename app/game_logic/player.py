@@ -67,6 +67,8 @@ class Player:
             if data.get('enemy_piece_index') != -1 and temp_enemy_piece:
                 self.pieces.append(temp_enemy_piece)
             return False
+        if self.pieces[data.get('piece_index')].get_name() == 'P':
+            self.pieces[data.get('piece_index')].set_is_first_to_false()
         return True
 
     def can_move(self, coords: list, other_player: "Player") -> dict:
@@ -178,10 +180,22 @@ class Player:
         for piece in self.pieces:
             for row_pos in range(8):
                 for col_pos in range(8):
+                    new_pos = {'row': row_pos, 'col_num': col_pos}
                     if self.can_move(
-                            coords=[piece.position, {'row': row_pos, 'col_num': col_pos}],
+                            coords=[piece.position, new_pos],
                             other_player=enemy_player
                     )['status_code'] == 1:
+                        # Ensure move does not result in a check
+                        if piece.get_name() == 'K' and self.position_results_in_check(enemy_player, new_pos):
+                            continue
+                        # To check if non-king move puts you in check, temporarily move the piece and then revert back
+                        if piece.get_name() != 'K':
+                            og_pos = piece.position
+                            piece.set_position(new_pos)
+                            if self.position_results_in_check(enemy_player, self.get_king().position):
+                                piece.set_position(og_pos)
+                                continue
+                            piece.set_position(og_pos)
                         return False
         return True
 

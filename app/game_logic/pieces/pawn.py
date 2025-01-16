@@ -28,11 +28,10 @@ class Pawn(Piece):
         # A pawn cannot capture by moving forward
         if col_diff == 0 and row_diff > 0 and kwargs['is_capture']:
             return False
-
-        # first_move is set to false due to passing all move checks
-        if self.first_move:
-            self.first_move = False
         return True
+
+    def set_is_first_to_false(self):
+        self.first_move = False
 
     # Might need to be in Player class
     def promote(self, new_piece: str):

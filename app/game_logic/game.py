@@ -39,15 +39,17 @@ class Game:
             for index, coord in enumerate(split_moves):
                 split_moves[index] = self.get_input_coords(coord)
             is_valid = active_player.move(split_moves, other_player)
+        self.display_board()
         if other_player.check_if_in_check(active_player):
             if other_player.check_for_check_mate(active_player):
                 print(f'CHECKMATE! {other_player.get_name()} is checkmated!')
+                return False
             else:
                 print(f'WARNING! {other_player.get_name()} is in check!!!!')
         # TODO: Check for stalemate!
         elif other_player.check_if_in_stalemate(active_player):
             print('STALEMATE! It\'s a tie!')
-        self.display_board()
+            return False
         return input('Do you want to keep playing (Y/N)? ').upper() == 'Y'
 
     def display_board(self):
