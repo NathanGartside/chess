@@ -46,7 +46,6 @@ class Game:
                 return False
             else:
                 print(f'WARNING! {other_player.get_name()} is in check!!!!')
-        # TODO: Check for stalemate!
         elif other_player.check_if_in_stalemate(active_player):
             print('STALEMATE! It\'s a tie!')
             return False
