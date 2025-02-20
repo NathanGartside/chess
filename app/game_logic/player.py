@@ -67,7 +67,7 @@ class Player:
             if data.get('enemy_piece_index') != -1 and temp_enemy_piece:
                 self.pieces.append(temp_enemy_piece)
             return False
-        if self.pieces[data.get('piece_index')].get_name() == 'P':
+        if self.pieces[data.get('piece_index')].get_first_move():
             self.pieces[data.get('piece_index')].set_is_first_to_false()
         return True
 
@@ -92,8 +92,18 @@ class Player:
         if self.check_space_occupancy(coords[1], self.pieces) != -1:
             return {'status_code': -3, 'data': None}
 
+        # If spaces between new and current position are occupied, then invalid move
         if self.check_middle_space_occupancy(coords[0], coords[1], self.pieces, other_player.pieces):
             return {'status_code': -4, 'data': None}
+
+        # TODO: Check for castle here since we already check if king can move and for middle space occupancy
+        #   - Identify Knight that is castling
+        #   - Check if Knight has moved
+        #   - Calculate Knight's new position
+        #   - Check for middle space occupancy for Knight
+        #   - Check if any space that the King will traverse is being attacked including new and current position
+        if not self.valid_castle():
+            return {'status_code': -1, 'data': None}
 
         return {'status_code': 1, 'data': {'piece_index': piece_index, 'enemy_piece_index': enemy_piece_index}}
 
@@ -202,6 +212,16 @@ class Player:
                                 continue
                             piece.set_position(og_pos)
                         return False
+        return True
+
+    @staticmethod
+    def valid_castle():
+        # TODO: Check for castle here since we already check if king can move and for middle space occupancy
+        #   - Identify Knight that is castling
+        #   - Check if Knight has moved
+        #   - Calculate Knight's new position
+        #   - Check for middle space occupancy for Knight
+        #   - Check if any space that the King will traverse is being attacked including new and current position
         return True
 
     def position_results_in_check(self, enemy_player: "Player", coord: dict) -> bool:

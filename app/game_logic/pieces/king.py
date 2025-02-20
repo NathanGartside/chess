@@ -11,6 +11,12 @@ class King(Piece):
             return False
         row_diff = abs(new_pos['row'] - self.position['row'])
         col_diff = abs(new_pos['col_num'] - self.position['col_num'])
+        if self.is_castle_attempt(row_diff, col_diff):
+            return True
         if col_diff > 1 or row_diff > 1 or (col_diff == 0 and row_diff == 0):
             return False
         return True
+
+    def is_castle_attempt(self, col_diff: int, row_diff: int):
+        if col_diff > 1 and row_diff == 0 and self.first_move:
+            return True

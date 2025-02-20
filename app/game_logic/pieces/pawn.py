@@ -30,9 +30,6 @@ class Pawn(Piece):
             return False
         return True
 
-    def set_is_first_to_false(self):
-        self.first_move = False
-
     # Might need to be in Player class
     def promote(self, new_piece: str):
         pass
