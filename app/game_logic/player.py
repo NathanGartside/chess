@@ -14,13 +14,14 @@ class Player:
         self.in_check = False
 
     def generate_pieces(self):
+        back_row = 1 if self.is_first else 8
         # Generate pawn row
         for i in range(1, 9):
             pawn_row = 2 if self.is_first else 7
             self.pieces.append(Pawn({'row': pawn_row, 'col_num': i}))
-        # Generate back row
-        back_row = 1 if self.is_first else 8
         counter = 0
+
+        # Generate back row
         for piece_object in [Rook, Knight, Bishop]:
             for i in range(2):
                 col_num = i + counter if i == 1 else 8 - counter
@@ -52,10 +53,22 @@ class Player:
 
         data = result.get('data')
 
+        temp_player_piece_pos = self.pieces[data.get('piece_index')].position
+        temp_enemy_piece = None
         if data.get('enemy_piece_index') != -1:
+            temp_enemy_piece = data.get('enemy_piece_index')
             other_player.remove_piece(data.get('enemy_piece_index'))
 
         self.pieces[data.get('piece_index')].set_position(coords[1])
+        # If new position puts yourself in check, reset to prior the move
+        if self.check_if_in_check(other_player):
+            print('Invalid move input: Move leaves your King in check')
+            self.pieces[data.get('piece_index')].set_position(temp_player_piece_pos)
+            if data.get('enemy_piece_index') != -1 and temp_enemy_piece:
+                self.pieces.append(temp_enemy_piece)
+            return False
+        if self.pieces[data.get('piece_index')].get_name() == 'P':
+            self.pieces[data.get('piece_index')].set_is_first_to_false()
         return True
 
     def can_move(self, coords: list, other_player: "Player") -> dict:
@@ -122,7 +135,6 @@ class Player:
                 index += 1
         # the king is not in check or can move out of check
         if possible_king_moves or not self.in_check:
-            # TODO: if possible moves is empty and not in check, then check for stalemate
             return False
 
         enemies_checking = []
@@ -160,6 +172,31 @@ class Player:
                 if self.can_move([piece.position, saving_pos], enemy_player)['status_code'] == 1:
                     return False
 
+        return True
+
+    def check_if_in_stalemate(self, enemy_player: "Player") -> bool:
+        # Checks every location on the board against every piece for a legal move
+        # Feel free to tell me if there is a more efficient solution than this
+        for piece in self.pieces:
+            for row_pos in range(8):
+                for col_pos in range(8):
+                    new_pos = {'row': row_pos, 'col_num': col_pos}
+                    if self.can_move(
+                            coords=[piece.position, new_pos],
+                            other_player=enemy_player
+                    )['status_code'] == 1:
+                        # Ensure move does not result in a check
+                        if piece.get_name() == 'K' and self.position_results_in_check(enemy_player, new_pos):
+                            continue
+                        # To check if non-king move puts you in check, temporarily move the piece and then revert back
+                        if piece.get_name() != 'K':
+                            og_pos = piece.position
+                            piece.set_position(new_pos)
+                            if self.position_results_in_check(enemy_player, self.get_king().position):
+                                piece.set_position(og_pos)
+                                continue
+                            piece.set_position(og_pos)
+                        return False
         return True
 
     def position_results_in_check(self, enemy_player: "Player", coord: dict) -> bool:
