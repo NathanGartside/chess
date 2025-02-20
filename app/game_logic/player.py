@@ -72,6 +72,11 @@ class Player:
         return True
 
     def can_move(self, coords: list, other_player: "Player") -> dict:
+        # TODO: Include castling!
+        #   - Neither the king nor the rook has previously moved
+        #   - The king is not currently in check
+        #   - There are no pieces between the king and the rook
+        #   - The king does not pass through or finish on a square that is attached by an enemy piece
         piece_index = self.check_space_occupancy(coords[0], self.pieces)
         # Check if position is occupied by a player piece
         if piece_index == -1:
