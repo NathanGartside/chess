@@ -1,5 +1,12 @@
 from ..piece import Piece
 
+CASTLE_MOVES = [
+    [{'row': 1, 'col_num': 5}, {'row': 1, 'col_num': 3}],
+    [{'row': 1, 'col_num': 5}, {'row': 1, 'col_num': 7}],
+    [{'row': 8, 'col_num': 5}, {'row': 8, 'col_num': 3}],
+    [{'row': 8, 'col_num': 5}, {'row': 8, 'col_num': 7}],
+]
+
 
 class King(Piece):
     def __init__(self, position):
@@ -11,12 +18,13 @@ class King(Piece):
             return False
         row_diff = abs(new_pos['row'] - self.position['row'])
         col_diff = abs(new_pos['col_num'] - self.position['col_num'])
-        if self.is_castle_attempt(row_diff, col_diff):
+        if self.is_castle_attempt(new_pos):
             return True
         if col_diff > 1 or row_diff > 1 or (col_diff == 0 and row_diff == 0):
             return False
         return True
 
-    def is_castle_attempt(self, col_diff: int, row_diff: int):
-        if col_diff > 1 and row_diff == 0 and self.first_move:
+    # Passes initial check for a castle attempt, the player class continues to check if castling is possible
+    def is_castle_attempt(self, new_pos: dict):
+        if self.first_move and [self.position, new_pos] in CASTLE_MOVES:
             return True

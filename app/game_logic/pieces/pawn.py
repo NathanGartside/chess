@@ -5,7 +5,6 @@ class Pawn(Piece):
     def __init__(self, position):
         super().__init__(position)
         self.set_name('P')
-        self.first_move = True
 
     def can_move(self, new_pos: dict, **kwargs):
         if not super().can_move(new_pos, **kwargs):

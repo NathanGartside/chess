@@ -89,6 +89,8 @@ class Game:
     @staticmethod
     def validate_coordinates(coordinates: list) -> bool:
         pattern = re.compile("[A-Za-z][0-9]")
+        if len(coordinates) == 1:
+            return False
         for coord in coordinates:
             if not pattern.match(coord):
                 return False

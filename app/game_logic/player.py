@@ -99,7 +99,7 @@ class Player:
         # TODO: Check for castle here since we already check if king can move and for middle space occupancy
         #   - Identify Knight that is castling
         #   - Check if Knight has moved
-        #   - Calculate Knight's new position
+        #   - Calculate Knight's new position and make the move
         #   - Check for middle space occupancy for Knight
         #   - Check if any space that the King will traverse is being attacked including new and current position
         if not self.valid_castle():
