@@ -51,6 +51,9 @@ class Player:
             print('Invalid move input: Designated piece cannot jump over other pieces')
             return False
 
+        if result.get('status_code') == -5:
+            print('Invalid move input: Invalid Castle Attempt')
+            return False
         data = result.get('data')
 
         temp_player_piece_pos = self.pieces[data.get('piece_index')].position
@@ -101,7 +104,7 @@ class Player:
 
         if self.get_king().is_castle_attempt(coords[0], coords[1]):
             if not self.valid_castle(coords, other_player):
-                return {'status_code': -1, 'data': None}
+                return {'status_code': -5, 'data': None}
             else:
                 r_col = 8 if coords[1].get('col_num') == 7 else 1
                 r_new_col = 6 if coords[1].get('col_num') == 7 else 4
@@ -230,8 +233,8 @@ class Player:
             return False
         # Check if there is a piece blocking the rook
         pos_to_check = {'row': rook_pos.get('row'), 'col_num': 2}
-        if rook_pos.get('col_num') == 1 and self.check_space_occupancy(pos_to_check, self.pieces) \
-                and self.check_space_occupancy(pos_to_check, enemy_player.pieces):
+        if rook_pos.get('col_num') == 1 and (self.check_space_occupancy(pos_to_check, self.pieces) != -1
+                or self.check_space_occupancy(pos_to_check, enemy_player.pieces) != -1):
             return False
         # Check if any space the king traverses will be attacked, including current and final space
         for i in range(coords[0].get('col_num'), coords[1].get('col_num'), 1 if r_col == 8 else -1):
