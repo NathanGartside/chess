@@ -21,6 +21,7 @@ class Game:
         self.player2.generate_pieces()
         self.board = self.generate_board()
         keep_playing = True
+        # TODO: Include counters for stalemate! 50 moves without capture or 3 same moves from each player
         while keep_playing:
             active_player = self.player1 if self.turn % 2 == 1 else self.player2
             other_player = self.player2 if self.turn % 2 == 1 else self.player1

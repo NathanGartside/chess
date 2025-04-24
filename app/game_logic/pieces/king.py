@@ -18,13 +18,13 @@ class King(Piece):
             return False
         row_diff = abs(new_pos['row'] - self.position['row'])
         col_diff = abs(new_pos['col_num'] - self.position['col_num'])
-        if self.is_castle_attempt(new_pos):
+        if self.is_castle_attempt(self.position, new_pos):
             return True
         if col_diff > 1 or row_diff > 1 or (col_diff == 0 and row_diff == 0):
             return False
         return True
 
     # Passes initial check for a castle attempt, the player class continues to check if castling is possible
-    def is_castle_attempt(self, new_pos: dict):
-        if self.first_move and [self.position, new_pos] in CASTLE_MOVES:
+    def is_castle_attempt(self, old_pos: dict, new_pos: dict):
+        if self.first_move and old_pos == self.position and [self.position, new_pos] in CASTLE_MOVES:
             return True
