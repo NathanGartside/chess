@@ -1,4 +1,4 @@
-from .pieces.king import King
+from .pieces.king import King, CASTLE_MOVES
 from .pieces.queen import Queen
 from .pieces.bishop import Bishop
 from .pieces.knight import Knight
@@ -51,6 +51,9 @@ class Player:
             print('Invalid move input: Designated piece cannot jump over other pieces')
             return False
 
+        if result.get('status_code') == -5:
+            print('Invalid move input: Invalid Castle Attempt')
+            return False
         data = result.get('data')
 
         temp_player_piece_pos = self.pieces[data.get('piece_index')].position
@@ -67,11 +70,19 @@ class Player:
             if data.get('enemy_piece_index') != -1 and temp_enemy_piece:
                 self.pieces.append(temp_enemy_piece)
             return False
-        if self.pieces[data.get('piece_index')].get_name() == 'P':
+
+        if self.pieces[data.get('piece_index')].get_first_move():
             self.pieces[data.get('piece_index')].set_is_first_to_false()
+
+        # 2 status code is for castling, need to adjust the Rook's position
+        if result.get('status_code') == 2:
+            self.pieces[data.get('rook_index')].set_is_first_to_false()
+            # rook_new_pos should always be set by this point
+            self.pieces[data.get('rook_index')].set_position(data.get('rook_new_pos'))
         return True
 
     def can_move(self, coords: list, other_player: "Player") -> dict:
+        # TODO: Implement en pessante!
         piece_index = self.check_space_occupancy(coords[0], self.pieces)
         # Check if position is occupied by a player piece
         if piece_index == -1:
@@ -87,8 +98,22 @@ class Player:
         if self.check_space_occupancy(coords[1], self.pieces) != -1:
             return {'status_code': -3, 'data': None}
 
+        # If spaces between new and current position are occupied, then invalid move
         if self.check_middle_space_occupancy(coords[0], coords[1], self.pieces, other_player.pieces):
             return {'status_code': -4, 'data': None}
+
+        if self.get_king().is_castle_attempt(coords[0], coords[1]):
+            if not self.valid_castle(coords, other_player):
+                return {'status_code': -5, 'data': None}
+            else:
+                r_col = 8 if coords[1].get('col_num') == 7 else 1
+                r_new_col = 6 if coords[1].get('col_num') == 7 else 4
+                r_new_pos = {'row': coords[1]['row'], 'col_num': r_new_col}
+                rook_pos = {'row': coords[1]['row'], 'col_num': r_col}
+                rook_index = self.get_piece_index(rook_pos)
+
+                return {'status_code': 2, 'data': {'piece_index': piece_index, 'enemy_piece_index': enemy_piece_index,
+                                                   'rook_index': rook_index, 'rook_new_pos': r_new_pos}}
 
         return {'status_code': 1, 'data': {'piece_index': piece_index, 'enemy_piece_index': enemy_piece_index}}
 
@@ -199,6 +224,25 @@ class Player:
                         return False
         return True
 
+    def valid_castle(self, coords: list, enemy_player: "Player") -> bool:
+        r_col = 8 if coords[1].get('col_num') == 7 else 1
+        rook_pos = {'row': coords[1]['row'], 'col_num': r_col}
+        rook_index = self.get_piece_index(rook_pos)
+        # Check if rook is in the spot and if the rook has moved
+        if rook_index == -1 or not self.pieces[rook_index].first_move:
+            return False
+        # Check if there is a piece blocking the rook
+        pos_to_check = {'row': rook_pos.get('row'), 'col_num': 2}
+        if rook_pos.get('col_num') == 1 and (self.check_space_occupancy(pos_to_check, self.pieces) != -1
+                or self.check_space_occupancy(pos_to_check, enemy_player.pieces) != -1):
+            return False
+        # Check if any space the king traverses will be attacked, including current and final space
+        for i in range(coords[0].get('col_num'), coords[1].get('col_num'), 1 if r_col == 8 else -1):
+            pos = {'row': rook_pos.get('row'), 'col_num': i}
+            if self.position_results_in_check(enemy_player, pos):
+                return False
+        return True
+
     def position_results_in_check(self, enemy_player: "Player", coord: dict) -> bool:
         coords = [None, coord.copy()]
         for piece in enemy_player.pieces:
@@ -206,6 +250,12 @@ class Player:
             if enemy_player.can_move(coords, self)['status_code'] == 1:
                 return True
         return False
+
+    def get_piece_index(self, piece_pos: dict) -> int:
+        for i, piece in enumerate(self.pieces):
+            if piece.position == piece_pos:
+                return i
+        return -1
 
     def get_king(self) -> King:
         for piece in self.pieces:
@@ -221,7 +271,6 @@ class Player:
     @staticmethod
     def check_space_occupancy(space: dict, pieces: list) -> int:
         for i, piece in enumerate(pieces):
-            if piece.position['col_num'] == space['col_num'] \
-                    and piece.position['row'] == space['row']:
+            if piece.position['col_num'] == space['col_num'] and piece.position['row'] == space['row']:
                 return i
         return -1

@@ -5,7 +5,6 @@ class Pawn(Piece):
     def __init__(self, position):
         super().__init__(position)
         self.set_name('P')
-        self.first_move = True
 
     def can_move(self, new_pos: dict, **kwargs):
         if not super().can_move(new_pos, **kwargs):
@@ -29,9 +28,6 @@ class Pawn(Piece):
         if col_diff == 0 and row_diff > 0 and kwargs['is_capture']:
             return False
         return True
-
-    def set_is_first_to_false(self):
-        self.first_move = False
 
     # Might need to be in Player class
     def promote(self, new_piece: str):
