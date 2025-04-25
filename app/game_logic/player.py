@@ -12,6 +12,7 @@ class Player:
         self.pieces = []
         self.name = name
         self.in_check = False
+        self.previous_move_data = {'previous_move': [], 'prev_prev_move': [], 'is_pawn': False, 'repeat_counter': 0}
 
     def generate_pieces(self):
         back_row = 1 if self.is_first else 8
@@ -79,10 +80,15 @@ class Player:
             self.pieces[data.get('rook_index')].set_is_first_to_false()
             # rook_new_pos should always be set by this point
             self.pieces[data.get('rook_index')].set_position(data.get('rook_new_pos'))
+
+        self.update_previous_move_data(coords, self.pieces[data.get('piece_index')].get_name == 'P')
         return True
 
     def can_move(self, coords: list, other_player: "Player") -> dict:
-        # TODO: Implement en pessante!
+        # TODO: Implement en passant!
+        #   - Can only occur when a pawn moves 2 spaces to be beside an enemy pawn
+        #   - Keep track of previous move data as well as repeat data for stalemate
+        #   - Move logic will need to be handled in Pawn class
         piece_index = self.check_space_occupancy(coords[0], self.pieces)
         # Check if position is occupied by a player piece
         if piece_index == -1:
@@ -250,6 +256,15 @@ class Player:
             if enemy_player.can_move(coords, self)['status_code'] == 1:
                 return True
         return False
+    
+    def update_previous_move_data(self, new_previous_move: list, is_pawn: bool):
+        if new_previous_move == self.previous_move_data.get('prev_prev_move'):
+            self.previous_move_data['repeat_counter'] += 1
+        else:
+            self.previous_move_data['repeat_counter'] = 0
+        self.previous_move_data['prev_prev_move'] = self.previous_move_data['previous_move']
+        self.previous_move_data['previous_move'] = new_previous_move
+        self.previous_move_data['is_pawn'] = is_pawn
 
     def get_piece_index(self, piece_pos: dict) -> int:
         for i, piece in enumerate(self.pieces):
