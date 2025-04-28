@@ -97,7 +97,7 @@ class Player:
         piece = self.pieces[piece_index]
         # enemy piece index is calculated here due to pawns allowing movement if it is capturing
         enemy_piece_index = self.check_space_occupancy(coords[1], other_player.pieces)
-        if not piece.can_move(coords[1], is_first=self.is_first, is_capture=enemy_piece_index != -1):
+        if not piece.can_move(coords[1], is_first=self.is_first, is_capture=enemy_piece_index != -1, enemy=other_player):
             return {'status_code': -2, 'data': None}
 
         # If the same team piece is occupying the new space, then invalid move
@@ -108,20 +108,32 @@ class Player:
         if self.check_middle_space_occupancy(coords[0], coords[1], self.pieces, other_player.pieces):
             return {'status_code': -4, 'data': None}
 
+        return_data = {'status_code': 0, 'data': {'enemy_piece_index': enemy_piece_index, 'piece_index': piece_index}}
+
         if self.get_king().is_castle_attempt(coords[0], coords[1]):
             if not self.valid_castle(coords, other_player):
                 return {'status_code': -5, 'data': None}
             else:
                 r_col = 8 if coords[1].get('col_num') == 7 else 1
                 r_new_col = 6 if coords[1].get('col_num') == 7 else 4
-                r_new_pos = {'row': coords[1]['row'], 'col_num': r_new_col}
+
+                return_data['status_code'] = 2
+                return_data['data']['rook_new_pos'] = {'row': coords[1]['row'], 'col_num': r_new_col}
+
                 rook_pos = {'row': coords[1]['row'], 'col_num': r_col}
-                rook_index = self.get_piece_index(rook_pos)
+                return_data['data']['rook_index'] = self.get_piece_index(rook_pos)
 
-                return {'status_code': 2, 'data': {'piece_index': piece_index, 'enemy_piece_index': enemy_piece_index,
-                                                   'rook_index': rook_index, 'rook_new_pos': r_new_pos}}
+                return return_data
 
-        return {'status_code': 1, 'data': {'piece_index': piece_index, 'enemy_piece_index': enemy_piece_index}}
+        if piece.get_name() == 'P' and piece.get_is_en_passant():
+            enemy_piece_index = other_player.get_piece_index(other_player.previous_move_data['previous_move'][1])
+            return_data['status_code'] = 3
+            return_data['data']['enemy_piece_index'] = enemy_piece_index
+            piece.set_is_en_passant(False)
+            return return_data
+
+        return_data['status_code'] = 1
+        return return_data
 
     def check_middle_space_occupancy(self, old_pos: dict, new_pos: dict,
                                      player1_pieces: list, player2_pieces: list) -> bool:
