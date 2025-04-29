@@ -85,10 +85,6 @@ class Player:
         return True
 
     def can_move(self, coords: list, other_player: "Player") -> dict:
-        # TODO: Implement en passant!
-        #   - Can only occur when a pawn moves 2 spaces to be beside an enemy pawn
-        #   - Keep track of previous move data as well as repeat data for stalemate
-        #   - Move logic will need to be handled in Pawn class
         piece_index = self.check_space_occupancy(coords[0], self.pieces)
         # Check if position is occupied by a player piece
         if piece_index == -1:
